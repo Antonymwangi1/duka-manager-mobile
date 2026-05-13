@@ -6,18 +6,24 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 const COLORS = {
   bg: "#282828",
   bgSoft: "#32302f",
-  yellow: "#fabd2f",
-  gray: "#928374",
+  bgHard: "#1d2021",
   fg: "#ebdbb2",
+  yellow: "#fabd2f",
+  green: "#b8bb26",
+  red: "#fb4934",
+  blue: "#83a598",
+  gray: "#928374",
 };
 
-interface TabIconProps {
+function TabIcon({
+  focused,
+  label,
+  children,
+}: {
   focused: boolean;
   label: string;
   children: React.ReactNode;
-}
-
-function TabIcon({ focused, label, children }: TabIconProps) {
+}) {
   return (
     <View
       style={{
@@ -45,26 +51,23 @@ function TabIcon({ focused, label, children }: TabIconProps) {
 
 function POSIcon({ focused }: { focused: boolean }) {
   return (
-    <View style={{ alignItems: "center", justifyContent: "center" }}>
-      <View
-        style={{
-          width: 56,
-          height: 56,
-          borderRadius: 28,
-          backgroundColor: focused ? COLORS.yellow : COLORS.bgSoft,
-          borderWidth: 2,
-          borderColor: focused ? COLORS.yellow : COLORS.gray,
-          alignItems: "center",
-          justifyContent: "center",
-          marginBottom: 4,
-        }}
-      >
-        <MaterialCommunityIcons
-          name="point-of-sale"
-          size={26}
-          color={focused ? COLORS.bg : COLORS.gray}
-        />
-      </View>
+    <View
+      style={{
+        width: 56,
+        height: 56,
+        borderRadius: 28,
+        backgroundColor: focused ? COLORS.yellow : COLORS.bgSoft,
+        borderWidth: 2,
+        borderColor: focused ? COLORS.yellow : COLORS.gray,
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <MaterialCommunityIcons
+        name="point-of-sale"
+        size={26}
+        color={focused ? COLORS.bg : COLORS.gray}
+      />
     </View>
   );
 }
@@ -81,9 +84,9 @@ export default function AppLayout() {
           backgroundColor: COLORS.bgSoft,
           borderTopColor: COLORS.gray + "30",
           borderTopWidth: 1,
-          height: 65 + insets.bottom,
-          paddingBottom: insets.bottom || 10,
-          paddingTop: 6,
+          height: 60 + insets.bottom,
+          paddingBottom: insets.bottom,
+          paddingTop: 8,
         },
         tabBarActiveTintColor: COLORS.yellow,
         tabBarInactiveTintColor: COLORS.gray,
@@ -92,7 +95,6 @@ export default function AppLayout() {
       <Tabs.Screen
         name="dashboard/index"
         options={{
-          title: "Dashboard",
           tabBarIcon: ({ focused }) => (
             <TabIcon focused={focused} label="Dashboard">
               <Feather
@@ -104,11 +106,9 @@ export default function AppLayout() {
           ),
         }}
       />
-
       <Tabs.Screen
         name="inventory/index"
         options={{
-          title: "Inventory",
           tabBarIcon: ({ focused }) => (
             <TabIcon focused={focused} label="Inventory">
               <Feather
@@ -120,11 +120,9 @@ export default function AppLayout() {
           ),
         }}
       />
-
       <Tabs.Screen
         name="pos/index"
         options={{
-          title: "POS",
           tabBarIcon: ({ focused }) => (
             <TabIcon focused={focused} label="POS">
               <POSIcon focused={focused} />
@@ -132,11 +130,9 @@ export default function AppLayout() {
           ),
         }}
       />
-
       <Tabs.Screen
         name="reports/index"
         options={{
-          title: "Reports",
           tabBarIcon: ({ focused }) => (
             <TabIcon focused={focused} label="Reports">
               <Feather
@@ -148,11 +144,9 @@ export default function AppLayout() {
           ),
         }}
       />
-
       <Tabs.Screen
         name="staff/index"
         options={{
-          title: "Staff",
           tabBarIcon: ({ focused }) => (
             <TabIcon focused={focused} label="Staff">
               <Feather
@@ -164,6 +158,10 @@ export default function AppLayout() {
           ),
         }}
       />
+
+      {/* Hide non-tab screens from tab bar */}
+      <Tabs.Screen name="inventory/add" options={{ href: null }} />
+      <Tabs.Screen name="inventory/[id]" options={{ href: null }} />
     </Tabs>
   );
 }
