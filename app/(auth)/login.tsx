@@ -156,6 +156,18 @@ export default function Login() {
               <Text className="text-bg font-bold text-base">Sign In</Text>
             )}
           </TouchableOpacity>
+          {/* Register Link */}
+          <TouchableOpacity
+            onPress={() => router.push("/(auth)/register")}
+            style={{ alignItems: "center", marginTop: 16 }}
+          >
+            <Text style={{ color: "#928374", fontSize: 14 }}>
+              Don't have an account?{" "}
+              <Text style={{ color: "#FBBF24", fontWeight: "600" }}>
+                Create one
+              </Text>
+            </Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

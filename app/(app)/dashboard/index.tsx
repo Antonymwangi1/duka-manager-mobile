@@ -1,18 +1,19 @@
+import { router } from "expo-router";
+import { Feather } from "@expo/vector-icons";
+import { format } from "date-fns";
+import { useState } from "react";
 import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Feather } from "@expo/vector-icons";
-import { useState } from "react";
-import { format } from "date-fns";
-import { useAuthStore } from "../../../lib/stores/authStore";
 import { useReport } from "../../../hooks/useReport";
 import { PeriodType } from "../../../lib/api/reports";
+import { useAuthStore } from "../../../lib/stores/authStore";
 
 const COLORS = {
   bg: "#282828",
@@ -43,7 +44,14 @@ interface StatCardProps {
   subPositive?: boolean;
 }
 
-function StatCard({ label, value, icon, iconColor, sub, subPositive }: StatCardProps) {
+function StatCard({
+  label,
+  value,
+  icon,
+  iconColor,
+  sub,
+  subPositive,
+}: StatCardProps) {
   return (
     <View
       style={{
@@ -55,13 +63,28 @@ function StatCard({ label, value, icon, iconColor, sub, subPositive }: StatCardP
         margin: 4,
       }}
     >
-      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 10,
+        }}
+      >
         <Text style={{ color: COLORS.gray, fontSize: 12 }}>{label}</Text>
         <Feather name={icon} size={16} color={iconColor} />
       </View>
-      <Text style={{ color: COLORS.fg, fontSize: 20, fontWeight: "700" }}>{value}</Text>
+      <Text style={{ color: COLORS.fg, fontSize: 20, fontWeight: "700" }}>
+        {value}
+      </Text>
       {sub && (
-        <Text style={{ color: subPositive ? COLORS.green : COLORS.red, fontSize: 11, marginTop: 4 }}>
+        <Text
+          style={{
+            color: subPositive ? COLORS.green : COLORS.red,
+            fontSize: 11,
+            marginTop: 4,
+          }}
+        >
           {sub}
         </Text>
       )}
@@ -84,7 +107,7 @@ export default function Dashboard() {
   const { data, isLoading, isError, refetch, isRefetching } = useReport(
     shopId,
     activePeriod,
-    today
+    today,
   );
 
   const profitMargin = data
@@ -111,13 +134,41 @@ export default function Dashboard() {
         }
       >
         {/* Header */}
-        <View style={{ marginBottom: 20 }}>
-          <Text style={{ color: COLORS.gray, fontSize: 13 }}>
-            {format(new Date(), "EEEE, d MMMM yyyy")}
-          </Text>
-          <Text style={{ color: COLORS.fg, fontSize: 22, fontWeight: "700", marginTop: 2 }}>
-            Hey, {user?.name?.split(" ")[0]} 👋
-          </Text>
+
+        {/* Header */}
+        <View
+          style={{
+            marginBottom: 20,
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+          }}
+        >
+          <View>
+            <Text style={{ color: COLORS.gray, fontSize: 13 }}>
+              {format(new Date(), "EEEE, d MMMM yyyy")}
+            </Text>
+            <Text
+              style={{
+                color: COLORS.fg,
+                fontSize: 22,
+                fontWeight: "700",
+                marginTop: 2,
+              }}
+            >
+              Hey, {user?.name?.split(" ")[0]} 👋
+            </Text>
+          </View>
+          <TouchableOpacity
+            onPress={() => router.push("/(app)/settings" as any)}
+            style={{
+              padding: 8,
+              backgroundColor: COLORS.bgSoft,
+              borderRadius: 10,
+            }}
+          >
+            <Feather name="settings" size={20} color={COLORS.gray} />
+          </TouchableOpacity>
         </View>
 
         {/* Period Selector */}
@@ -177,7 +228,9 @@ export default function Dashboard() {
             }}
           >
             <Feather name="wifi-off" size={32} color={COLORS.red} />
-            <Text style={{ color: COLORS.fg, fontWeight: "600", marginTop: 12 }}>
+            <Text
+              style={{ color: COLORS.fg, fontWeight: "600", marginTop: 12 }}
+            >
               Failed to load report
             </Text>
             <Text style={{ color: COLORS.gray, fontSize: 12, marginTop: 4 }}>
@@ -189,7 +242,14 @@ export default function Dashboard() {
         {/* Stat Cards */}
         {data && (
           <>
-            <View style={{ flexDirection: "row", flexWrap: "wrap", margin: -4, marginBottom: 8 }}>
+            <View
+              style={{
+                flexDirection: "row",
+                flexWrap: "wrap",
+                margin: -4,
+                marginBottom: 8,
+              }}
+            >
               <StatCard
                 label="Revenue"
                 value={formatKES(data.totalRevenue)}
@@ -246,7 +306,8 @@ export default function Dashboard() {
                     style={{
                       flexDirection: "row",
                       alignItems: "center",
-                      marginBottom: index < data.topProductsJson.length - 1 ? 12 : 0,
+                      marginBottom:
+                        index < data.topProductsJson.length - 1 ? 12 : 0,
                     }}
                   >
                     {/* Rank */}
@@ -255,7 +316,8 @@ export default function Dashboard() {
                         width: 28,
                         height: 28,
                         borderRadius: 14,
-                        backgroundColor: index === 0 ? COLORS.yellow : COLORS.bgHard,
+                        backgroundColor:
+                          index === 0 ? COLORS.yellow : COLORS.bgHard,
                         alignItems: "center",
                         justifyContent: "center",
                         marginRight: 12,
@@ -274,7 +336,13 @@ export default function Dashboard() {
 
                     {/* Name + Bar */}
                     <View style={{ flex: 1 }}>
-                      <Text style={{ color: COLORS.fg, fontSize: 13, fontWeight: "500" }}>
+                      <Text
+                        style={{
+                          color: COLORS.fg,
+                          fontSize: 13,
+                          fontWeight: "500",
+                        }}
+                      >
                         {product.name}
                       </Text>
                       <View
@@ -289,7 +357,8 @@ export default function Dashboard() {
                           style={{
                             height: 4,
                             borderRadius: 2,
-                            backgroundColor: index === 0 ? COLORS.yellow : COLORS.blue,
+                            backgroundColor:
+                              index === 0 ? COLORS.yellow : COLORS.blue,
                             width: `${
                               (product.quantity /
                                 data.topProductsJson[0].quantity) *

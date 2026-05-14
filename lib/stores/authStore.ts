@@ -22,6 +22,7 @@ interface AuthState {
     role: string,
     refreshToken: string,
   ) => Promise<void>;
+  updateUser: (user: AuthUser) => Promise<void>; // ← new
   clearAuth: () => Promise<void>;
   loadFromStorage: () => Promise<void>;
 }
@@ -34,7 +35,6 @@ export const useAuthStore = create<AuthState>((set) => ({
   isLoading: true,
 
   setAuth: async (token, user, shopId, role, refreshToken) => {
-    // Persist to encrypted storage
     await Promise.all([
       SecureStore.setItemAsync("accessToken", token),
       SecureStore.setItemAsync("refreshToken", refreshToken),
@@ -43,6 +43,12 @@ export const useAuthStore = create<AuthState>((set) => ({
       SecureStore.setItemAsync("role", role),
     ]);
     set({ token, user, shopId, role });
+  },
+
+  updateUser: async (user) => {
+    // ← new
+    await SecureStore.setItemAsync("user", JSON.stringify(user));
+    set({ user });
   },
 
   clearAuth: async () => {
@@ -66,15 +72,9 @@ export const useAuthStore = create<AuthState>((set) => ({
       ]);
 
       if (token && userJson && shopId && role) {
-        set({
-          token,
-          user: JSON.parse(userJson),
-          shopId,
-          role,
-        });
+        set({ token, user: JSON.parse(userJson), shopId, role });
       }
     } catch {
-      // Corrupted storage — wipe it
       await Promise.all([
         SecureStore.deleteItemAsync("accessToken"),
         SecureStore.deleteItemAsync("refreshToken"),

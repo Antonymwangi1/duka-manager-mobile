@@ -162,6 +162,7 @@ export default function AppLayout() {
       {/* Hide non-tab screens from tab bar */}
       <Tabs.Screen name="inventory/add" options={{ href: null }} />
       <Tabs.Screen name="inventory/[id]" options={{ href: null }} />
+      <Tabs.Screen name="settings" options={{ href: null }} />
     </Tabs>
   );
 }
