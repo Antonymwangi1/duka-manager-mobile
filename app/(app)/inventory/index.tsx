@@ -1,20 +1,20 @@
+import { Feather } from "@expo/vector-icons";
+import { router } from "expo-router";
+import { useMemo, useState } from "react";
 import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
-  RefreshControl,
   ActivityIndicator,
   Alert,
+  RefreshControl,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Feather } from "@expo/vector-icons";
-import { useState, useMemo } from "react";
-import { router } from "expo-router";
-import { useAuthStore } from "../../../lib/stores/authStore";
-import { useProducts, useDeleteProduct } from "../../../hooks/useInventory";
+import { useDeleteProduct, useProducts } from "../../../hooks/useInventory";
 import { Product } from "../../../lib/api/inventory";
+import { useAuthStore } from "../../../lib/stores/authStore";
 
 const COLORS = {
   bg: "#282828",
@@ -39,9 +39,15 @@ interface ProductCardProps {
   product: Product;
   onEdit: () => void;
   onDelete: () => void;
+  canManage?: boolean;
 }
 
-function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
+function ProductCard({
+  product,
+  onEdit,
+  onDelete,
+  canManage,
+}: ProductCardProps) {
   const isLowStock =
     product.lowStockThreshold !== undefined &&
     product.stockQty <= product.lowStockThreshold;
@@ -50,14 +56,14 @@ function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
   const stockColor = isOutOfStock
     ? COLORS.red
     : isLowStock
-    ? COLORS.yellow
-    : COLORS.green;
+      ? COLORS.yellow
+      : COLORS.green;
 
   const stockLabel = isOutOfStock
     ? "Out of stock"
     : isLowStock
-    ? "Low stock"
-    : "In stock";
+      ? "Low stock"
+      : "In stock";
 
   return (
     <View
@@ -71,7 +77,13 @@ function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
       }}
     >
       {/* Top Row */}
-      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+        }}
+      >
         <View style={{ flex: 1, marginRight: 8 }}>
           <Text style={{ color: COLORS.fg, fontWeight: "700", fontSize: 15 }}>
             {product.name}
@@ -89,28 +101,30 @@ function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
         </View>
 
         {/* Actions */}
-        <View style={{ flexDirection: "row", gap: 8 }}>
-          <TouchableOpacity
-            onPress={onEdit}
-            style={{
-              padding: 6,
-              backgroundColor: COLORS.bgHard,
-              borderRadius: 8,
-            }}
-          >
-            <Feather name="edit-2" size={14} color={COLORS.blue} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={onDelete}
-            style={{
-              padding: 6,
-              backgroundColor: COLORS.bgHard,
-              borderRadius: 8,
-            }}
-          >
-            <Feather name="trash-2" size={14} color={COLORS.red} />
-          </TouchableOpacity>
-        </View>
+        {canManage && (
+          <View style={{ flexDirection: "row", gap: 8 }}>
+            <TouchableOpacity
+              onPress={onEdit}
+              style={{
+                padding: 6,
+                backgroundColor: COLORS.bgHard,
+                borderRadius: 8,
+              }}
+            >
+              <Feather name="edit-2" size={14} color={COLORS.blue} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={onDelete}
+              style={{
+                padding: 6,
+                backgroundColor: COLORS.bgHard,
+                borderRadius: 8,
+              }}
+            >
+              <Feather name="trash-2" size={14} color={COLORS.red} />
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
 
       {/* Bottom Row */}
@@ -123,8 +137,12 @@ function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
         }}
       >
         <View>
-          <Text style={{ color: COLORS.gray, fontSize: 11 }}>Selling Price</Text>
-          <Text style={{ color: COLORS.yellow, fontWeight: "700", fontSize: 14 }}>
+          <Text style={{ color: COLORS.gray, fontSize: 11 }}>
+            Selling Price
+          </Text>
+          <Text
+            style={{ color: COLORS.yellow, fontWeight: "700", fontSize: 14 }}
+          >
             {formatKES(product.sellingPrice)}
           </Text>
         </View>
@@ -148,11 +166,18 @@ function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
 
 export default function Inventory() {
   const insets = useSafeAreaInsets();
-  const { shopId } = useAuthStore();
+  const { shopId, role } = useAuthStore();
   const [search, setSearch] = useState("");
 
-  const { data: products, isLoading, isError, refetch, isRefetching } =
-    useProducts(shopId);
+  const canManage = role === "OWNER" || role === "MANAGER";
+
+  const {
+    data: products,
+    isLoading,
+    isError,
+    refetch,
+    isRefetching,
+  } = useProducts(shopId);
 
   const deleteMutation = useDeleteProduct(shopId!);
 
@@ -164,7 +189,7 @@ export default function Inventory() {
       (p) =>
         p.name.toLowerCase().includes(q) ||
         p.sku?.toLowerCase().includes(q) ||
-        p.category?.toLowerCase().includes(q)
+        p.category?.toLowerCase().includes(q),
     );
   }, [products, search]);
 
@@ -172,8 +197,7 @@ export default function Inventory() {
     if (!products) return 0;
     return products.filter(
       (p) =>
-        p.lowStockThreshold !== undefined &&
-        p.stockQty <= p.lowStockThreshold
+        p.lowStockThreshold !== undefined && p.stockQty <= p.lowStockThreshold,
     ).length;
   }, [products]);
 
@@ -188,7 +212,7 @@ export default function Inventory() {
           style: "destructive",
           onPress: () => deleteMutation.mutate(product.id),
         },
-      ]
+      ],
     );
   };
 
@@ -203,7 +227,13 @@ export default function Inventory() {
           backgroundColor: COLORS.bg,
         }}
       >
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
           <View>
             <Text style={{ color: COLORS.fg, fontSize: 22, fontWeight: "700" }}>
               Inventory
@@ -213,7 +243,8 @@ export default function Inventory() {
                 {products.length} products
                 {lowStockCount > 0 && (
                   <Text style={{ color: COLORS.yellow }}>
-                    {" "}· {lowStockCount} low stock
+                    {" "}
+                    · {lowStockCount} low stock
                   </Text>
                 )}
               </Text>
@@ -221,23 +252,27 @@ export default function Inventory() {
           </View>
 
           {/* Add Button */}
-          <TouchableOpacity
-            onPress={() => router.push("/(app)/inventory/add")}
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              backgroundColor: COLORS.yellow,
-              paddingHorizontal: 14,
-              paddingVertical: 8,
-              borderRadius: 10,
-              gap: 6,
-            }}
-          >
-            <Feather name="plus" size={16} color={COLORS.bg} />
-            <Text style={{ color: COLORS.bg, fontWeight: "700", fontSize: 13 }}>
-              Add
-            </Text>
-          </TouchableOpacity>
+          {canManage && (
+            <TouchableOpacity
+              onPress={() => router.push("/(app)/inventory/add")}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                backgroundColor: COLORS.yellow,
+                paddingHorizontal: 14,
+                paddingVertical: 8,
+                borderRadius: 10,
+                gap: 6,
+              }}
+            >
+              <Feather name="plus" size={16} color={COLORS.bg} />
+              <Text
+                style={{ color: COLORS.bg, fontWeight: "700", fontSize: 13 }}
+              >
+                Add
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Search */}
@@ -254,7 +289,12 @@ export default function Inventory() {
         >
           <Feather name="search" size={16} color={COLORS.gray} />
           <TextInput
-            style={{ flex: 1, color: COLORS.fg, paddingVertical: 10, fontSize: 14 }}
+            style={{
+              flex: 1,
+              color: COLORS.fg,
+              paddingVertical: 10,
+              fontSize: 14,
+            }}
             placeholder="Search by name, SKU, category..."
             placeholderTextColor={COLORS.gray}
             value={search}
@@ -271,14 +311,23 @@ export default function Inventory() {
 
       {/* Content */}
       {isLoading ? (
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+        <View
+          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+        >
           <ActivityIndicator color={COLORS.yellow} size="large" />
           <Text style={{ color: COLORS.gray, marginTop: 12, fontSize: 13 }}>
             Loading inventory...
           </Text>
         </View>
       ) : isError ? (
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 24 }}>
+        <View
+          style={{
+            flex: 1,
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 24,
+          }}
+        >
           <Feather name="alert-circle" size={32} color={COLORS.red} />
           <Text style={{ color: COLORS.fg, fontWeight: "600", marginTop: 12 }}>
             Failed to load inventory
@@ -293,7 +342,9 @@ export default function Inventory() {
               borderRadius: 8,
             }}
           >
-            <Text style={{ color: COLORS.yellow, fontWeight: "600" }}>Retry</Text>
+            <Text style={{ color: COLORS.yellow, fontWeight: "600" }}>
+              Retry
+            </Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -315,10 +366,24 @@ export default function Inventory() {
           {filtered.length === 0 ? (
             <View style={{ alignItems: "center", paddingTop: 60 }}>
               <Feather name="package" size={40} color={COLORS.gray} />
-              <Text style={{ color: COLORS.fg, fontWeight: "600", marginTop: 16, fontSize: 16 }}>
+              <Text
+                style={{
+                  color: COLORS.fg,
+                  fontWeight: "600",
+                  marginTop: 16,
+                  fontSize: 16,
+                }}
+              >
                 {search ? "No products found" : "No products yet"}
               </Text>
-              <Text style={{ color: COLORS.gray, fontSize: 13, marginTop: 6, textAlign: "center" }}>
+              <Text
+                style={{
+                  color: COLORS.gray,
+                  fontSize: 13,
+                  marginTop: 6,
+                  textAlign: "center",
+                }}
+              >
                 {search
                   ? "Try a different search term"
                   : "Tap Add to create your first product"}
@@ -329,6 +394,7 @@ export default function Inventory() {
               <ProductCard
                 key={product.id}
                 product={product}
+                canManage={canManage}
                 onEdit={() =>
                   router.push({
                     pathname: "/(app)/inventory/[id]",

@@ -216,10 +216,12 @@ function CheckoutModal({
   subtotal,
   onClose,
   onConfirm,
+  canManageDiscounts,
 }: {
   visible: boolean;
   subtotal: number;
   onClose: () => void;
+  canManageDiscounts: boolean;
   onConfirm: (
     paymentMethod: PaymentMethod,
     amountPaid: number,
@@ -377,21 +379,23 @@ function CheckoutModal({
             )}
 
             {/* Discount */}
-            <View style={{ marginBottom: 16 }}>
-              <Text
-                style={{ color: COLORS.gray, fontSize: 12, marginBottom: 6 }}
-              >
-                Discount (KES)
-              </Text>
-              <TextInput
-                style={inputStyle}
-                placeholder="0"
-                placeholderTextColor={COLORS.gray}
-                value={discount}
-                onChangeText={setDiscount}
-                keyboardType="numeric"
-              />
-            </View>
+            {canManageDiscounts && (
+              <View style={{ marginBottom: 16 }}>
+                <Text
+                  style={{ color: COLORS.gray, fontSize: 12, marginBottom: 6 }}
+                >
+                  Discount (KES)
+                </Text>
+                <TextInput
+                  style={inputStyle}
+                  placeholder="0"
+                  placeholderTextColor={COLORS.gray}
+                  value={discount}
+                  onChangeText={setDiscount}
+                  keyboardType="numeric"
+                />
+              </View>
+            )}
 
             {/* Amount Paid */}
             <View style={{ marginBottom: 20 }}>
@@ -688,8 +692,9 @@ function ReceiptModal({
 // ── Main POS Screen ──────────────────────────────────────────────
 export default function POS() {
   const insets = useSafeAreaInsets();
-  const { shopId } = useAuthStore();
+  const { shopId, role } = useAuthStore();
   const { data: products } = useProducts(shopId);
+  const canManageDiscounts = role === "OWNER" || role === "MANAGER";
 
   const [search, setSearch] = useState("");
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -1069,6 +1074,7 @@ export default function POS() {
         subtotal={subtotal}
         onClose={() => setShowCheckout(false)}
         onConfirm={handleConfirmSale}
+        canManageDiscounts={canManageDiscounts}
       />
       <ReceiptModal
         visible={showReceipt}
